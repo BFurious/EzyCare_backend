@@ -8,7 +8,7 @@ async function checkConnection() {
       await prisma.$connect();
       console.log("Connected to PostgreSQL database successfully!");
     } catch (error) {
-      console.error(`Failed to connect to PostgreSQL database: ${DATABSE_URL}`, error);
+      console.error(`Failed to connect to PostgreSQL database: ${process.env.DATABSE_URL}`, error);
     } finally {
       await prisma.$disconnect();
     }
