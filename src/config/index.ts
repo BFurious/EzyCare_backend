@@ -16,9 +16,9 @@ export default {
         refresh_secret: process.env.JWT_REFRESH_SCRET,
     },
     cloudinary: {
-        name: process.env.CLOUND_NAME,
-        key: process.env.API_KEY,
-        secret: process.env.API_SECRET
+        name: process.env.CLOUDINARY_NAME,
+        key: process.env.CLOUDINARY_API_KEY,
+        secret: process.env.CLOUDINARY_API_SECRET
     },
     emailPass: process.env.EMAIL_PASS,
     adminEmail: process.env.ADMIN_EMAIL,

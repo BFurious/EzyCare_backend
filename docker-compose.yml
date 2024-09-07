@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: ezyCare_postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: $Gotohell@
+      POSTGRES_DB: postgres
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - data:/var/lib/postgresql/data
+      - logs:/var/log/postgresql
+      - secrets:/var/lib/postgresql/secrets
+    ports:
+      - "3000:5432"
+    networks:
+      - ezycare_network
+
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: ezyCare_backend
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    ports:
+      - "5050:5050"
+    environment:
+      DATABASE_URL: postgresql://postgres:$Gotohell@@localhost:3000/postgres
+    networks:
+      - ezycare_network
+
+volumes:
+  data: 
+  logs: 
+  secrets: 
+
+networks:
+  ezycare_network:
+    driver: bridge
