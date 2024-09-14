@@ -7,7 +7,7 @@
       
     }
   ],
-  "buildCommand": "npm run build",
+   "buildCommand": "sh vercel.sh",
   "routes": [
     {
       "src": "/(.*)",
