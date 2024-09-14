@@ -7,11 +7,10 @@
       
     }
   ],
-   "buildCommand": "sh vercel.sh",
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "dist/server.js"
+      "dest": "src/server.js"
     }
   ]
 }
