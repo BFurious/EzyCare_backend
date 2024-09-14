@@ -1,6 +1,7 @@
 import {Server} from 'http';
 import app from "./app";
 import config from './config';
+import prisma from "./shared/prisma";
 
 async function bootstrap(){
     const server:Server = app.listen(config.port, () =>{
