@@ -38,11 +38,14 @@ async function bootstrap() {
   
   const io = new socketServer(server, {
     adapter: createAdapter(pubClient, subClient,{
-      requestsTimeout:50000
+      requestsTimeout:5000
     }) as any,
-    pingTimeout: 60000,
+    pingTimeout: 6000,
     cors: {
-      origin: config.frontend_url,
+      origin: "*", // For testing purposes only
+      methods: ["GET", "POST"],
+      allowedHeaders: ["Content-Type"],
+      credentials: true,
     }
   });
 
@@ -52,7 +55,7 @@ async function bootstrap() {
     // Create a new room with a unique ID
     socket.on('createRoom', (data, callback) => {
       const roomId = (Date.now().toString(36)).slice(-5); // Create unique room ID
-      rooms[roomId] = { host: socket.id, guest: null }; // Store room details
+      rooms[roomId] = { host: socket.id, guest: null }  ; // Store room details
 
       socket.join(roomId); // Host joins the room
       callback({ roomId }); // Send the roomId to the client
