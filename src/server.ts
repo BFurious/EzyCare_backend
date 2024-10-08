@@ -7,7 +7,6 @@ import { createAdapter } from "@socket.io/redis-adapter";
 
 async function bootstrap() {
   // Store users and rooms
-  let users: { [userId: string]: string } = {}; // Example: { userId: socketId }
   let rooms: { [key: string]: any } = {};
   const server: Server = app.listen(config.port, () => {
     console.log(`Server running on port ${config.port}`);
