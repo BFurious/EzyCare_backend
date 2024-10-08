@@ -6,6 +6,7 @@ dotenv.config({path: path.join(process.cwd(), '.env')});
 const CLIENT_URL = process.env.NODE_ENV === "development" ? process.env.CLIENT_LOCAL_URL : process.env.CLIENT_URL;
 const BACKEND_URL = process.env.NODE_ENV === "development" ? process.env.BACKEND_LOCAL_URL : process.env.BACKEND_URL;
 const REDIS_URL = process.env.NODE_ENV === "development" ? process.env.REDIS_LOCAL_URL : process.env.REDIS_URL;
+const FRONTEND_URL = process.env.NODE_ENV === "development" ? process.env.FRONTEND_LOCAL_URL : process.env.FRONTEND_URL;
 
 export default {
     env: process.env.NODE_ENV,
@@ -27,5 +28,6 @@ export default {
     gmail_app_Email: process.env.GMAIL_APP_EMAIL,
     defaultAdminDoctor: process.env.DEFULT_ADMIN_DOCTOR,
     backendUrl: BACKEND_URL,
-    redis_url: REDIS_URL
+    redis_url: REDIS_URL,
+    frontend_url: FRONTEND_URL
 }

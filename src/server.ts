@@ -11,6 +11,7 @@ async function bootstrap() {
   const server: Server = app.listen(config.port, () => {
     console.log(`Server running on port ${config.port}`);
   });
+
   // to do :bufferutil: Allows to efficiently perform operations such as masking and unmasking the data payload of the WebSocket frames.
   // utf-8-validate: Allows to efficiently check if a message contains valid UTF-8 as required by the spec.
   const pubClient = createClient({ url: config.redis_url });
@@ -37,11 +38,11 @@ async function bootstrap() {
   
   const io = new socketServer(server, {
     adapter: createAdapter(pubClient, subClient,{
-      requestsTimeout:5000
+      requestsTimeout:50000
     }) as any,
     pingTimeout: 60000,
     cors: {
-      origin: "http://localhost:3000",
+      origin: config.frontend_url,
     }
   });
 
@@ -88,8 +89,8 @@ async function bootstrap() {
     });
 
     // Handle user disconnecting
-    socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.id}`);
+    socket.on('disconnect', (reason) => {
+      console.log(`User disconnected: ${socket.id} reason:${reason}`);
       // Remove user from rooms, handle cleanup, etc.
       Object.keys(rooms).forEach((roomId) => {
         const room = rooms[roomId];
