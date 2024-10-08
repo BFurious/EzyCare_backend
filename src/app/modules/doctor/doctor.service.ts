@@ -16,9 +16,9 @@ import config from "../../../config";
 const { v4: uuidv4 } = require('uuid');
 
 const sendVerificationEmail = async (data: Doctor) => {
-    const currentUrl = process.env.NODE_ENV === 'production' ? config.backendLiveUrl : config.backendLocalUrl;
+    const currentUrl = config.backendUrl;
     const uniqueString = uuidv4() + data.id;
-    const uniqueStringHashed = await bcrypt.hashSync(uniqueString, 12);
+    const uniqueStringHashed = bcrypt.hashSync(uniqueString, 12);
     const url = `${currentUrl}user/verify/${data.id}/${uniqueString}`
     const expiresDate = moment().add(6, 'hours')
     const verficationData = await prisma.userVerfication.create({
