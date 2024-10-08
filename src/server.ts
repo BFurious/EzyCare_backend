@@ -25,18 +25,27 @@ async function bootstrap() {
     console.error('Redis Client Error:', err);
   });
 
-  await Promise.all([
-    pubClient.connect(),
-    subClient.connect()
-  ]);
+  try {
+    await Promise.all([
+      pubClient.connect(),
+      subClient.connect()
+    ]);
+    console.log('Redis clients connected successfully');
+  } catch (error) {
+    console.error('Error connecting Redis clients:', error);
+    // You can also perform any additional error handling or retry logic here
+  }
   
   const io = new socketServer(server, {
-    adapter: createAdapter(pubClient, subClient) as any,
+    adapter: createAdapter(pubClient, subClient,{
+      requestsTimeout:5000
+    }) as any,
     pingTimeout: 60000,
     cors: {
       origin: "http://localhost:3000",
     }
   });
+
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
     socket.emit("message", "hello sir, how may i help u?");
