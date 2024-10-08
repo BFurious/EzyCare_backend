@@ -31,7 +31,7 @@ async function bootstrap() {
   ]);
   
   const io = new socketServer(server, {
-    adapter: createAdapter(pubClient, subClient),
+    adapter: createAdapter(pubClient, subClient) as any,
     pingTimeout: 60000,
     cors: {
       origin: "http://localhost:3000",
