@@ -40,7 +40,7 @@ async function bootstrap() {
     adapter: createAdapter(pubClient, subClient,{
       requestsTimeout:5000
     }) as any,
-    pingTimeout: 6000,
+    pingTimeout: 60000,
     cors: {
       origin: "*", // For testing purposes only
       methods: ["GET", "POST"],
