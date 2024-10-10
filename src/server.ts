@@ -80,7 +80,7 @@ async function bootstrap() {
       }
 
       socket.join(roomId); // Guest joins the room
-      rooms.push(socket.id);
+      rooms[roomId].push(socket.id);
       callback({ success: true });
       console.log(`User ${socket.id} joined room ${roomId}`);
     });
@@ -90,8 +90,7 @@ async function bootstrap() {
       if(roomId){
         if(!rooms[roomId]?.includes(socket.id)){
           socket.join(roomId);
-
-          rooms.push(socket.id);
+          rooms[roomId].push(socket.id);
         }
         io.to(roomId).emit('message', { sender: socket.id, message: message });
       }
@@ -105,7 +104,7 @@ async function bootstrap() {
         rooms[roomId] = rooms[roomId]?.filter((socketId:string) => socketId !== socket.id);
         socket.leave(roomId);
         console.log(`Room left by: ${socket.id}`);
-        if(rooms[roomId].length()==0){
+        if(rooms[roomId].length == 0){
           delete rooms[roomId];
           console.log(`Room deleted as no one here: ${roomId}`);
         }
@@ -124,7 +123,7 @@ async function bootstrap() {
         socket.to(roomId).emit('message', { sender: socket.id, notification: `${socket.id} Disconnected` });
         rooms[roomId] = rooms[roomId].filter((socketId:string) => socketId !== socket.id);
         console.log(`User disconnected itself: ${socket.id} reason:${reason}`);
-        if (rooms[roomId].length() == 0 ) {
+        if (rooms[roomId].length == 0 ) {
           delete rooms[roomId];
           console.log(`Room deleted as no one here: ${roomId}`);
         }
