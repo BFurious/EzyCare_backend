@@ -18,7 +18,7 @@ async function bootstrap() {
   const subClient = pubClient.duplicate();
   // Listen for the 'connect' event
   pubClient.on('connect', () => {
-    console.log(' pubClient Connected to Redis successfully!',  config.redis_url);
+    console.log(' pubClient Connected to Redis successfully!', config.redis_url);
   });
   // Listen for any errors that occur
   pubClient.on('error', (err) => {
@@ -35,12 +35,12 @@ async function bootstrap() {
     console.error('Error connecting Redis clients:', error);
     // You can also perform any additional error handling or retry logic here
   }
-  
+
   const io = new socketServer(server, {
-    adapter: createAdapter(pubClient, subClient,{
-      requestsTimeout:5000
+    adapter: createAdapter(pubClient, subClient, {
+      requestsTimeout: 5000
     }) as any,
-    pingTimeout: 30000,  // 30 seconds
+    pingTimeout: 10000,  // 30 seconds
     pingInterval: 10000, // 10 seconds
     cors: {
       origin: "*", // For testing purposes only
@@ -52,58 +52,85 @@ async function bootstrap() {
 
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
-    socket.emit("message", "hello sir, how may i help u?");
+    socket.emit("message", { sender: socket.id, message: "hello sir, how may i help u?" });
+
     // Create a new room with a unique ID
-    socket.on('createRoom', (data, callback) => {
+    socket.on('createRoom', (callback) => {
       const roomId = (Date.now().toString(36)).slice(-5); // Create unique room ID
-      rooms[roomId] = { host: socket.id, guest: null }  ; // Store room details
+      if(rooms[roomId]){
+        rooms[roomId].push(socket.id); // Store room details
+      }
+      rooms[roomId]=[socket.id];
 
       socket.join(roomId); // Host joins the room
       callback({ roomId }); // Send the roomId to the client
-
       console.log(`Room created: ${roomId}`);
     });
 
     // Allow a guest to join the room if they have the correct roomId
-    socket.on('joinRoom', ({ roomId}, callback) => {
+    socket.on('joinRoom', ({ roomId }, callback) => {
       const room = rooms[roomId];
 
       if (!room) {
         return callback({ error: 'Room not found' });
       }
 
-      if (room.guest !== null) {
+      if (room.length >= 2) {
         return callback({ error: 'Room is full' });
       }
 
-      if (socket.id != room.host) {
-        room.guest = socket.id; // Assign guest to the room
-        socket.join(roomId); // Guest joins the room
-        callback({ success: true });
-
-        console.log(`User ${socket.id} joined room ${roomId}`);
-      } else {
-        callback({ error: 'Not authorized to join the room' });
-      }
+      socket.join(roomId); // Guest joins the room
+      rooms.push(socket.id);
+      callback({ success: true });
+      console.log(`User ${socket.id} joined room ${roomId}`);
     });
 
     // Handle messages within the room
     socket.on('message', ({ roomId, message }) => {
-      io.to(roomId).emit('message', { sender: socket.id, message });
+      if(roomId){
+        if(!rooms[roomId]?.includes(socket.id)){
+          socket.join(roomId);
+
+          rooms.push(socket.id);
+        }
+        io.to(roomId).emit('message', { sender: socket.id, message: message });
+      }
+      else
+        socket.emit("message", { sender: socket.id, message: "please create room first and share code with whom u want to connect,\n HAPPY CHATTING 😏😏" });
+
     });
+
+    socket.on('leaveRoom', ({ roomId }, callback) => {
+      if (rooms[roomId]) {
+        rooms[roomId] = rooms[roomId]?.filter((socketId:string) => socketId !== socket.id);
+        socket.leave(roomId);
+        console.log(`Room left by: ${socket.id}`);
+        if(rooms[roomId].length()==0){
+          delete rooms[roomId];
+          console.log(`Room deleted as no one here: ${roomId}`);
+        }
+        callback({ message: "Room left"});
+      }else{
+        callback({ message: "room doesnt exist" });
+      }
+    })
 
     // Handle user disconnecting
     socket.on('disconnect', (reason) => {
-      console.log(`User disconnected: ${socket.id} reason:${reason}`);
-      // Remove user from rooms, handle cleanup, etc.
-      Object.keys(rooms).forEach((roomId) => {
-        const room = rooms[roomId];
-        if (room.host === socket.id || room.guest === socket.id) {
-          io.to(roomId).emit('message', { message: 'User disconnected' });
-          delete rooms[roomId]; // Delete room when any participant leaves
-          console.log(`Room ${roomId} deleted`);
+        const roomId = Object.keys(rooms).find((id) => {
+          rooms[id].includes(socket.id);
+        })
+      if (roomId) {
+        socket.to(roomId).emit('message', { sender: socket.id, notification: `${socket.id} Disconnected` });
+        rooms[roomId] = rooms[roomId].filter((socketId:string) => socketId !== socket.id);
+        console.log(`User disconnected itself: ${socket.id} reason:${reason}`);
+        if (rooms[roomId].length() == 0 ) {
+          delete rooms[roomId];
+          console.log(`Room deleted as no one here: ${roomId}`);
         }
-      });
+      } else{
+        socket.emit('message', { sender: socket.id, notification: "u got disconnected"});
+      }
     });
   });
 
