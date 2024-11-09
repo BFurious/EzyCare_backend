@@ -121,6 +121,11 @@ async function bootstrap() {
       }
     })
 
+    socket.on("end-video-call", (data, callback) => {
+      socket.to(data.roomId).emit('message', { notification: `${socket.id} left video call` });
+      return callback({ success: true })
+    })
+
     socket.on('offer', (data) => {
       socket.to(data.roomId).emit('offer', data.offer);
       socket.to(data.roomId).emit('message', { notification: `offer recieved from ${socket.id} and reverted` });
