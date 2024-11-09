@@ -54,17 +54,18 @@ async function bootstrap() {
     console.log('User connected:', socket.id);
     socket.emit("message", { sender: socket.id, message: "hello sir, how may i help u?" });
 
-    // Create a new room with a unique ID
+    // Create a new room with a unique ID`
+
     socket.on('createRoom', (callback) => {
       const roomId = (Date.now().toString(36)).slice(-5); // Create unique room ID
-      if(rooms[roomId]){
+      if (rooms[roomId]) {
         rooms[roomId].push(socket.id); // Store room details
       }
-      rooms[roomId]=[socket.id];
+      rooms[roomId] = [socket.id];
 
       socket.join(roomId); // Host joins the room
-      callback({ roomId }); // Send the roomId to the client
       console.log(`Room created: ${roomId}`);
+      callback({ roomId }); // Send the roomId to the client
     });
 
     // Allow a guest to join the room if they have the correct roomId
@@ -81,14 +82,19 @@ async function bootstrap() {
 
       socket.join(roomId); // Guest joins the room
       rooms[roomId].push(socket.id);
+
+      //send status or meessage to single user
       callback({ success: true });
+
+      //send message to the group members
+      socket.to(roomId).emit("message", { notification: `${socket.id} joined room` })
       console.log(`User ${socket.id} joined room ${roomId}`);
     });
 
     // Handle messages within the room
     socket.on('message', ({ roomId, message }) => {
-      if(roomId){
-        if(!rooms[roomId]?.includes(socket.id)){
+      if (roomId) {
+        if (!rooms[roomId]?.includes(socket.id)) {
           socket.join(roomId);
           rooms[roomId].push(socket.id);
         }
@@ -101,46 +107,53 @@ async function bootstrap() {
 
     socket.on('leaveRoom', ({ roomId }, callback) => {
       if (rooms[roomId]) {
-        rooms[roomId] = rooms[roomId]?.filter((socketId:string) => socketId !== socket.id);
+        rooms[roomId] = rooms[roomId]?.filter((socketId: string) => socketId !== socket.id);
         socket.leave(roomId);
         console.log(`Room left by: ${socket.id}`);
-        if(rooms[roomId].length == 0){
+        if (rooms[roomId].length == 0) {
           delete rooms[roomId];
           console.log(`Room deleted as no one here: ${roomId}`);
         }
-        callback({ message: "Room left"});
-      }else{
+        socket.to(roomId).emit('message', { notification: `${socket.id} left room` });
+        callback({ success: true });
+      } else {
         callback({ message: "room doesnt exist" });
       }
     })
 
     socket.on('offer', (data) => {
       socket.to(data.roomId).emit('offer', data.offer);
+      socket.to(data.roomId).emit('message', { notification: `offer recieved from ${socket.id} and reverted` });
+      console.log(`Offer received from sender in room ${data.roomId}`);
     });
-  
+
     socket.on('answer', (data) => {
       socket.to(data.roomId).emit('answer', data.answer);
+      socket.to(data.roomId).emit('message', { notification: `Answer recieved from ${socket.id} and reverted` });
+      console.log(`Answer received from sender in room ${data.roomId}`);
     });
-  
+
     socket.on('ice-candidate', (data) => {
       socket.to(data.roomId).emit('ice-candidate', data.candidate);
-    });  
+      socket.to(data.roomId).emit('message', { notification: `ice-candidate recieved from ${socket.id} and reverted` });
+      console.log(`ice-candidate received from sender in room ${data.roomId}`);
+    });
 
     // Handle user disconnecting
     socket.on('disconnect', (reason) => {
-        const roomId = Object.keys(rooms).find((id) => {
-          rooms[id].includes(socket.id);
-        })
+      const roomId = Object.keys(rooms).find((id) => {
+        rooms[id].includes(socket.id);
+      })
       if (roomId) {
         socket.to(roomId).emit('message', { sender: socket.id, notification: `${socket.id} Disconnected` });
-        rooms[roomId] = rooms[roomId].filter((socketId:string) => socketId !== socket.id);
+        rooms[roomId] = rooms[roomId].filter((socketId: string) => socketId !== socket.id);
         console.log(`User disconnected itself: ${socket.id} reason:${reason}`);
-        if (rooms[roomId].length == 0 ) {
+        if (rooms[roomId].length == 0) {
           delete rooms[roomId];
           console.log(`Room deleted as no one here: ${roomId}`);
         }
-      } else{
-        socket.emit('message', { sender: socket.id, notification: "u got disconnected"});
+      } else {
+        io.emit('message', { sender: socket.id, notification: "u got disconnected" });
       }
     });
   });
