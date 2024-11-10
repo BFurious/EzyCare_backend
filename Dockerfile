@@ -10,11 +10,11 @@ COPY package.json yarn.lock ./
 # Copy the rest of the application code
 COPY . .
 # Install dependencies (including copyfiles if necessary)
-RUN npm install
+RUN yarn install
 
 
 # Build the application
-RUN npm build
+RUN yarn build
 
 # Generate Prisma client files
 RUN npx prisma generate
