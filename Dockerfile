@@ -7,14 +7,14 @@ WORKDIR /app
 # Copy package.json and yarn.lock to leverage Docker caching
 COPY package.json yarn.lock ./
 
-# Install dependencies (including copyfiles if necessary)
-RUN yarn install
-
 # Copy the rest of the application code
 COPY . .
+# Install dependencies (including copyfiles if necessary)
+RUN npm install
+
 
 # Build the application
-RUN yarn build
+RUN npm build
 
 # Generate Prisma client files
 RUN npx prisma generate
