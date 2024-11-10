@@ -6,9 +6,29 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ezyCare_backend
-    depends_on:
-      - postgres
     env_file:
       - .env
     ports:
       - "5050:5050"
+
+#   postgres:
+#     image: postgres:latest
+#     container_name: ezyCare_postgres
+#     environment:
+#       POSTGRES_USER: ${POSTGRES_USER}     # Use variables from .env file
+#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#       POSTGRES_DB: ${POSTGRES_DB}
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
+#     networks:
+#       - ezycare_network
+
+# # Define a custom network for the services
+# networks:
+#   ezycare_network:
+
+# # Define volumes to persist database data
+# volumes:
+#   postgres_data:
