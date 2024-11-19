@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({path: path.join(process.cwd(), '.env')});
+dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 const CLIENT_URL = process.env.NODE_ENV === "development" ? process.env.CLIENT_LOCAL_URL : process.env.CLIENT_URL;
 const BACKEND_URL = process.env.NODE_ENV === "development" ? process.env.BACKEND_LOCAL_URL : process.env.BACKEND_URL;
@@ -29,5 +29,9 @@ export default {
     defaultAdminDoctor: process.env.DEFULT_ADMIN_DOCTOR,
     backendUrl: BACKEND_URL,
     redis_url: REDIS_URL,
-    frontend_url: FRONTEND_URL
+    frontend_url: FRONTEND_URL,
+    paytmMerchantId: process.env.paytmMerchantId,
+    paytmWebsite: process.env.paytmWebsite,
+    paytmMerchantKey: process.env.paytmMerchantKey as string,
+
 }
