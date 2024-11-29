@@ -30,30 +30,30 @@ const sendVerificationEmail = async (data: Doctor) => {
     })
     if (verficationData) {
         const pathName = path.join(__dirname, '../../../../template/verify.html',)
-        const obj = {link: url};
+        const obj = { link: url };
         const subject = "Email Verification"
         const toMail = data.email;
-        try{
-            await EmailtTransporter({pathName, replacementObj: obj, toMail, subject})
-        }catch(err){
+        try {
+            await EmailtTransporter({ pathName, replacementObj: obj, toMail, subject })
+        } catch (err) {
             console.log(err);
-            throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Unable to send email !');
+            return new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Unable to send email !');
         }
     }
 }
 
 const create = async (payload: any): Promise<any> => {
+    const { password, ...othersData } = payload;
+    const existEmail = await prisma.auth.findUnique({ where: { email: othersData.email } });
+    if (existEmail) {
+        return new Error("Email Already Exist !!")
+    }
     const data = await prisma.$transaction(async (tx) => {
-        const { password, ...othersData } = payload;
-        const existEmail = await tx.auth.findUnique({ where: { email: othersData.email } });
-        if (existEmail) {
-            throw new Error("Email Already Exist !!")
-        }
         const doctor = await tx.doctor.create({ data: othersData });
         await tx.auth.create({
             data: {
                 email: doctor.email,
-                password: password && await bcrypt.hashSync(password, 12),
+                password: password && bcrypt.hashSync(password, 12),
                 role: UserRole.doctor,
                 userId: doctor.id
             },

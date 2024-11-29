@@ -8,6 +8,14 @@ import { IDoctorFiltersData, IDoctorOptions } from "./doctor.interface";
 
 const createDoctor = catchAsync(async (req: Request, res: Response) => {
     const result = await DoctorService.create(req.body);
+    if (result instanceof Error) {
+        return sendResponse(res, {
+            statusCode: 404,
+            message: result.message,
+            success: true
+        })
+    }
+
     sendResponse(res, {
         statusCode: 200,
         message: 'Successfully Doctor Created !!',
